@@ -29,35 +29,18 @@
 #       badconn - Failed to connect to provider because connection timeout.
 #
 # About this script
-#     This file need to be runnable in /sbin, e.g. /sbin/cloudflareddns.sh
+#     This file need to be runnable in /sbin, e.g. /sbin/ovhcaddns.sh
 
 
 set -e;
 
-proxied="true"
-
 # DSM Config
-domainName="$1"
+zoneName="$1"
 password="$2"
 hostname="$3"
 ip="$4"
 
 
-# To update the ip, e.g.
-# curl -X GET "https://example.com/api/ip-update?ip=`curl icanhazip.com`" -H "p-pwd: password" -H "p-hostname: www.example.com"
-
-ipUpdateUri="https://${domainName}/api/ip-update?ip=${ip}";
-response=$(curl -s -X GET "$ipUpdateUri" -H "p-pwd: $password" -H "p-hostname: $hostname")
-status=$(echo "$response" | jq -r ".status")
-
-#echo $response
-
-if [[ $status != "200" ]]; then
-	errorMsg=$(echo "$response" | jq -r ".errors[0].message")
-	echo badauth $status: $errorMsg
-	exit 1;
-else
-	echo "good";
-fi
-
-exit 0;
+# To refresh the change
+# curl -s -X POST "https://ca.api.ovh.com/1.0/domain/zone/example.com/refresh" -H "X-Ovh-Application: iE3vL3mgAtLZg00l" -H "X-Ovh-Consumer: Juf2pt9W67XLBhNOEp0EZC888D3LY1Tg" -H "X-Ovh-Signature: $1$54ad5c303944d8f65d82f0a9902f6c690afa6f72" -H "X-Ovh-Timestamp: 1645107753"
+#-b "tCdebugLib=1; TCPID=122161955377405701643; TC_PRIVACY=0@002%7C176%7C3810@2%2C3%2C4@1@1641632145600%2C1641632145600%2C1675328145600@; TC_PRIVACY_CENTER=2%2C3%2C4; tc_cj_v2=%7E%24.+%27%7B4ZZZ./%7B%7D%26*1%20-%21%27*2ZZZKPNKPLSLRPJJJZZZpc_q777.%20%28%7C-%7B%29%7EZZZ%22**%22%27%20ZZZKPNKPMKRQKJJJZZZ%5Dfc%5De777_rn_lh%5BfyfcheZZZ222H*1%23%7D%27*0%7EH%7D*%28ZZZKPNKPMLKNRJJJZZZ%5D777_rn_lh%5BfyfcheZZZ%7D%7BH*1%23H%7D*%28ZZZKPNKPMLQONJJJZZZ%5D777%7E%24.+%27%7B4ZZZ./%7B%7D%26*1%20-%21%27*2ZZZKPNKPONLMJJJJZZZpc_q777m…%22%3A1%7D%2C%22options%22%3A%7B%22path%22%3A%22%2F%22%2C%22session%22%3A15724800%2C%22end%22%3A15724800%7D%7D; _gcl_au=1.1.1933630143.1641632148; tc_cj_v2_cmp=; tc_cj_v2_med=; atauthority=%7B%22name%22%3A%22atauthority%22%2C%22val%22%3A%7B%22authority_name%22%3A%22default%22%2C%22visitor_mode%22%3A%22optin%22%7D%2C%22options%22%3A%7B%22end%22%3A%222023-03-02T00%3A44%3A06.659Z%22%2C%22path%22%3A%22%2F%22%7D%7D; kameleoonVisitorCode=_js_4adjwbqwyb2fo0jg; clientSideUserId=17eea82a-2ff9-46a3-9381-ff10fd3f68bb"
