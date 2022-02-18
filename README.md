@@ -1,17 +1,17 @@
-- [Synology Cloudflare DDNS Script 📜](#synology-cloudflare-ddns-script---)
+- [Synology Add Cloudflare DDNS 📜](#synology-add-cloudflare-ddns---)
   * [How to use `dsmCloudflareDdnsModule.sh`](#how-to-use--dsmcloudflareddnsmodulesh-)
     + [Access Synology via SSH](#access-synology-via-ssh)
     + [Run commands in Synology](#run-commands-in-synology)
   * [Get Cloudflare parameters](#get-cloudflare-parameters)
   * [Setup DDNS](#setup-ddns)
-- [Synology GoDaddy DDNS Script 📜](#synology-godaddy-ddns-script---)
+- [Synology Add GoDaddy DDNS 📜](#synology-add-godaddy-ddns---)
   * [How to use `dsmGodaddyDdnsModule.sh`](#how-to-use--dsmgodaddyddnsmodulesh-)
     + [Access Synology via SSH](#access-synology-via-ssh-1)
     + [Run commands in Synology](#run-commands-in-synology-1)
   * [Register API key and secret](#register-api-key-and-secret)
   * [Setup DDNS](#setup-ddns-1)
 
-# Synology Cloudflare DDNS Script 📜
+# Synology Add Cloudflare DDNS 📜
 
 The is a script to be used to add [Cloudflare](https://www.cloudflare.com/) as a DDNS to [Synology](https://www.synology.com/) NAS. The script used an updated API, Cloudflare API v4.
 
@@ -82,7 +82,7 @@ Note, `queryurl` does not matter because we are going to use our script but it i
 
 ---
 
-# Synology GoDaddy DDNS Script 📜
+# Synology Add GoDaddy DDNS 📜
 
 The is a script to be used to add [Godaddy](https://www.godaddy.com/) as a DDNS to [Synology](https://www.synology.com/) NAS. The script used an API v1.
 
