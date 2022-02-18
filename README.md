@@ -105,7 +105,7 @@ wget https://raw.githubusercontent.com/myrenyang/SynologyDsmDdns/main/dsmGodaddy
 
 2. (Optional) Update the script to change the log file location, by default it is `/var/services/web/logs/ddnsLog.txt`, that means you can see the log on website if you have enabled Web Station.
 
-4. Make it executable in `/sbin/godaddyddns.sh`
+3. Make it executable in `/sbin/godaddyddns.sh`
 
 ```
 chmod +x /sbin/godaddyddns.sh
@@ -115,7 +115,7 @@ If you put the script file in another folder, just make a link
 ln -s /whatever-path-of-the-folder/godaddyddns.sh /sbin/godaddyddns.sh
 ```
 
-3. Add `godaddyddns.sh` to Synology
+4. Add `godaddyddns.sh` to Synology
 
 Append following config to `/etc.defaults/ddns_provider.conf`.
 ```
