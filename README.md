@@ -1,4 +1,5 @@
 The idea is to keep consistency of adding DDNS in the Synology Control Panel External Access, so user can manage all DDNS records in one place.
+![](https://raw.githubusercontent.com/myrenyang/SynologyDsmDdns/main/Asset/Screenshot-20220218.png)
 Advantages:
 - Synology DSM update all DDNS items every day
 - Synology DSM has internal checking for WAN IP change, and trigger the DDNS update in minutes
