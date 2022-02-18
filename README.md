@@ -1,3 +1,18 @@
+- [Synology Cloudflare DDNS Script 📜](#synology-cloudflare-ddns-script---)
+  * [How to use `dsmCloudflareDdnsModule.sh`](#how-to-use--dsmcloudflareddnsmodulesh-)
+    + [Access Synology via SSH](#access-synology-via-ssh)
+    + [Run commands in Synology](#run-commands-in-synology)
+  * [Setup DDNS](#setup-ddns)
+  * [How to use `cloudflareDdnsWorker.js`](#how-to-use--cloudflareddnsworkerjs-)
+    + [Get Cloudflare parameters](#get-cloudflare-parameters)
+- [Synology GoDaddy DDNS Script 📜](#synology-godaddy-ddns-script---)
+  * [Register API key and secret](#register-api-key-and-secret)
+  * [How to use `dsmGodaddyDdnsModule.sh`](#how-to-use--dsmgodaddyddnsmodulesh-)
+    + [Access Synology via SSH](#access-synology-via-ssh-1)
+    + [Run commands in Synology](#run-commands-in-synology-1)
+  * [Setup DDNS](#setup-ddns-1)
+
+
 # Synology Cloudflare DDNS Script 📜
 
 The is a script to be used to add [Cloudflare](https://www.cloudflare.com/) as a DDNS to [Synology](https://www.synology.com/) NAS. The script used an updated API, Cloudflare API v4.
