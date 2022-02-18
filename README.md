@@ -2,16 +2,14 @@
   * [How to use `dsmCloudflareDdnsModule.sh`](#how-to-use--dsmcloudflareddnsmodulesh-)
     + [Access Synology via SSH](#access-synology-via-ssh)
     + [Run commands in Synology](#run-commands-in-synology)
+  * [Get Cloudflare parameters](#get-cloudflare-parameters)
   * [Setup DDNS](#setup-ddns)
-  * [How to use `cloudflareDdnsWorker.js`](#how-to-use--cloudflareddnsworkerjs-)
-    + [Get Cloudflare parameters](#get-cloudflare-parameters)
 - [Synology GoDaddy DDNS Script 📜](#synology-godaddy-ddns-script---)
-  * [Register API key and secret](#register-api-key-and-secret)
   * [How to use `dsmGodaddyDdnsModule.sh`](#how-to-use--dsmgodaddyddnsmodulesh-)
     + [Access Synology via SSH](#access-synology-via-ssh-1)
     + [Run commands in Synology](#run-commands-in-synology-1)
+  * [Register API key and secret](#register-api-key-and-secret)
   * [Setup DDNS](#setup-ddns-1)
-
 
 # Synology Cloudflare DDNS Script 📜
 
