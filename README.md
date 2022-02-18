@@ -71,3 +71,68 @@ Note, `queryurl` does not matter because we are going to use our script but it i
 
 1. Go to your domain overview page and copy your zone ID.
 2. Go to your profile > **API Tokens** > **Create Token**. It should have the permissions of `Zone > DNS > Edit`. Copy the api token.
+
+
+# Synology GoDaddy DDNS Script 📜
+
+## Register API key and secret
+
+1. Log into your GoDaddy account. After you have logged in, go to https://developer.godaddy.com/keys and click Create New API Key.
+2. After you click “Create New API Key”, a new window will open. Choose a Name for your new API key then select Production as Environment. Click Next.
+3. Copy your Key and your Secret Key to a text file and be careful not to lose it. Click Got it!
+
+## How to use `dsmGodaddyDdnsModule.sh`
+
+### Access Synology via SSH
+
+1. Login to your DSM
+2. Go to Control Panel > Terminal & SNMP > Enable SSH service
+3. Use your client to access Synology via SSH.
+4. Use your Synology admin account to connect.
+
+### Run commands in Synology
+
+2. Make it executable in `/sbin/godaddyddns.sh`
+
+```
+chmod +x /sbin/godaddyddns.sh
+```
+
+If you put the script file in another folder, just make a link
+
+```
+ln -s /whatever-path-of-the-folder/godaddyddns.sh /sbin/godaddyddns.sh
+```
+
+3. Add `godaddyddns.sh` to Synology
+
+Append following config to `/etc.defaults/ddns_provider.conf`.
+
+```
+[GoDaddy]
+        modulepath=/sbin/godaddyddns.sh
+        queryurl=https://developer.godaddy.com
+        website=https://dcc.godaddy.com
+```
+
+You can use VI editor or following commands
+```
+echo "[GoDaddy]" >> /etc.defaults/ddns_provider.conf
+echo "        modulepath=/sbin/godaddyddns.sh" >> /etc.defaults/ddns_provider.conf
+echo "        queryurl=https://developer.godaddy.com" >> /etc.defaults/ddns_provider.conf
+echo "        website=https://dcc.godaddy.com" >> /etc.defaults/ddns_provider.conf
+echo "" >> /etc.defaults/ddns_provider.conf
+```
+
+Note, `queryurl` does not matter because we are going to use our script but it is needed.
+
+## Setup DDNS
+
+1. Login to your DSM
+2. Go to Control Panel > External Access > DDNS > Add
+3. Enter the following:
+   - Service provider: `GoDaddy`
+   - Hostname: `www.example.com` or `@.example.com` for root domain
+   - Username/Email: `<api token>`
+   - Password Key: `<secret>`
+

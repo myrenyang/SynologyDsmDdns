@@ -34,30 +34,66 @@
 
 set -e;
 
-proxied="true"
+ipv4Regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
 
 # DSM Config
-domainName="$1"
-password="$2"
-hostname="$3"
+apiKey="$1"
+secret="$2"
+hostname="$3" # format need to be www.example.com.us, for the root domain, put like this: @.example.com.us
 ip="$4"
 
+domainName=${hostname#*.}
+hostName=${hostname%%.*}
 
-# To update the ip, e.g.
-# curl -X GET "https://example.com/api/ip-update?ip=`curl icanhazip.com`" -H "p-pwd: password" -H "p-hostname: www.example.com"
-
-ipUpdateUri="https://${domainName}/api/ip-update?ip=${ip}";
-response=$(curl -s -X GET "$ipUpdateUri" -H "p-pwd: $password" -H "p-hostname: $hostname")
-status=$(echo "$response" | jq -r ".status // 200")
-
-#echo "$response"
-
-if [[ $status != "200" ]]; then
-	errorMsg=$(echo "$response" | jq -r ".errors[0].message // null")
-	echo "badauth $status: $errorMsg"
-	exit 1;
+if [[ $ip =~ $ipv4Regex ]]; then
+    recordType="A";
 else
-	echo "good";
+    recordType="AAAA";
 fi
 
-exit 0;
+# To get the record details, e.g.
+# curl -s -X GET "https://api.godaddy.com/v1/domains/example.com/records/A/www" -H "Authorization: sso-key <apiKey>:<secret>"
+
+ipGetUri="https://api.godaddy.com/v1/domains/${domainName}/records/${recordType}/${hostName}"
+response=`curl -s -X GET "$ipGetUri" -H "Authorization: sso-key $apiKey:$secret"`
+
+if [[ $response == {* ]]; then
+	echo "badauth";
+	exit 1;
+fi
+if [[ $response == [] ]]; then
+	echo "nohost";
+	exit 1;
+fi
+
+# Get TTL value
+ttl=$(echo "$response" | jq -r ".[0].ttl // null")
+if [[ $ttl == "null" ]]; then
+	echo "nohost";
+	exit 1;
+fi
+
+dnsIp=$(echo "$response" | jq -r ".[0].data // null")
+
+# No need to update ip if already same
+if [[ $dnsIp == $ip ]]; then
+	echo "nochg";
+	exit 0;
+fi
+
+# To upate the ip details
+ipUpdateUri="https://api.godaddy.com/v1/domains/${domainName}/records/${recordType}/${hostName}"
+response=$(curl -s -X PUT "$ipUpdateUri" -H "Authorization: sso-key $apiKey:$secret" -H "Content-Type: application/json" -d '[{"data":"'$ip'","ttl":'$ttl'}]')
+
+if [ -z "$response" ]; then
+	echo "good";
+	exit 0;
+fi
+if [[ $response == {* ]]; then
+	message=$(echo $response | jq -r ".message")
+	echo "badresolv - $message";
+	exit 1;
+fi
+
+echo "$response"
+exit 1;
