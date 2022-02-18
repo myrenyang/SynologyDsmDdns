@@ -35,7 +35,7 @@
 set -e;
 ipv4Regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
 ddnsName="Cloudflare"
-logFile="/var/services/web/logs/ddns.log"
+logFile="/var/services/web/logs/ddnsLog.txt"
 
 # DSM Config
 zoneId="$1"    # username
