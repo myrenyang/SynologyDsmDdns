@@ -33,13 +33,14 @@
 
 
 set -e;
-
 ipv4Regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
+ddnsName="GoDaddy"
+logFile="/var/services/web/logs/ddns.log"
 
 # DSM Config
-apiKey="$1"
-secret="$2"
-hostname="$3" # format need to be www.example.com.us, for the root domain, put like this: @.example.com.us
+apiKey="$1"   # username
+secret="$2"   # password
+hostname="$3" # format to be like 'www.example.com.us', for the root domain, like this: '@.example.com.us'
 ip="$4"
 
 domainName=${hostname#*.}
@@ -58,18 +59,23 @@ ipGetUri="https://api.godaddy.com/v1/domains/${domainName}/records/${recordType}
 response=`curl -s -X GET "$ipGetUri" -H "Authorization: sso-key $apiKey:$secret"`
 
 if [[ $response == {* ]]; then
-	echo "badauth";
+    code=$(echo "$response" | jq -r ".code")
+    message=$(echo "$response" | jq -r ".message")
+	echo "badauth - $message";
+    echo "`date +"%Y-%m-%d %T"` - $ddnsName: $message" >> $logFile
 	exit 1;
 fi
 if [[ $response == [] ]]; then
-	echo "nohost";
+	echo "nohost - The hostname specified does not exist in this user account.";
+    echo "`date +"%Y-%m-%d %T"` - $ddnsName: The hostname specified does not exist in this user account." >> $logFile
 	exit 1;
 fi
 
 # Get TTL value
 ttl=$(echo "$response" | jq -r ".[0].ttl // null")
 if [[ $ttl == "null" ]]; then
-	echo "nohost";
+	echo "nohost - The hostname specified does not exist in this user account.";
+    echo "`date +"%Y-%m-%d %T"` - $ddnsName: Failed to get TTL value" >> $logFile
 	exit 1;
 fi
 
@@ -77,23 +83,28 @@ dnsIp=$(echo "$response" | jq -r ".[0].data // null")
 
 # No need to update ip if already same
 if [[ $dnsIp == $ip ]]; then
-	echo "nochg";
+	echo "nochg - IP same, skip update";
+    echo "`date +"%Y-%m-%d %T"` - $ddnsName: IP same, skip update" >> $logFile
 	exit 0;
 fi
 
 # To upate the ip details
 ipUpdateUri="https://api.godaddy.com/v1/domains/${domainName}/records/${recordType}/${hostName}"
-response=$(curl -s -X PUT "$ipUpdateUri" -H "Authorization: sso-key $apiKey:$secret" -H "Content-Type: application/json" -d '[{"data":"'$ip'","ttl":'$ttl'}]')
+response=$(curl -s -X PUT "$ipUpdateUri" -H "Authorization: sso-key $apiKey:$secret" -H "Content-Type: application/json" -d '[{"data":"'$ip'","ttl":"'$ttl'"}]')
 
 if [ -z "$response" ]; then
 	echo "good";
+    echo "`date +"%Y-%m-%d %T"` - $ddnsName: IP update successfully" >> $logFile
 	exit 0;
 fi
 if [[ $response == {* ]]; then
-	message=$(echo $response | jq -r ".message")
-	echo "badresolv - $message";
+    code=$(echo "$response" | jq -r ".code")
+    message=$(echo "$response" | jq -r ".message")
+    echo "notfqdn - $message";
+    echo "`date +"%Y-%m-%d %T"` - $ddnsName: $message" >> $logFile
 	exit 1;
 fi
 
 echo "$response"
+echo "`date +"%Y-%m-%d %T"` - $ddnsName: $response" >> $logFile
 exit 1;

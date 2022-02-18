@@ -33,31 +33,74 @@
 
 
 set -e;
-
-proxied="true"
+ipv4Regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
+ddnsName="Cloudflare"
+logFile="/var/services/web/logs/ddns.log"
 
 # DSM Config
-domainName="$1"
-password="$2"
-hostname="$3"
+zoneId="$1"    # username
+apiToken="$2"  # password
+hostname="$3"  # hostname
 ip="$4"
 
-
-# To update the ip, e.g.
-# curl -X GET "https://example.com/api/ip-update?ip=`curl icanhazip.com`" -H "p-pwd: password" -H "p-hostname: www.example.com"
-
-ipUpdateUri="https://${domainName}/api/ip-update?ip=${ip}";
-response=$(curl -s -X GET "$ipUpdateUri" -H "p-pwd: $password" -H "p-hostname: $hostname")
-status=$(echo "$response" | jq -r ".status // 200")
-
-#echo "$response"
-
-if [[ $status != "200" ]]; then
-	errorMsg=$(echo "$response" | jq -r ".errors[0].message // null")
-	echo "badauth $status: $errorMsg"
-	exit 1;
+if [[ $ip =~ $ipv4Regex ]]; then
+    recordType="A";
 else
-	echo "good";
+    recordType="AAAA";
 fi
+
+# Get the recordId
+listDnsUri="https://api.cloudflare.com/client/v4/zones/$zoneId/dns_records?name=${hostname}"
+response=$(curl -s -X GET "$listDnsUri" -H "Authorization: Bearer $apiToken" -H "Content-Type: application/json")
+success=$(echo "$response" | jq -r ".success")
+
+if [[ $success != "true" ]]; then
+    errorCode=$(echo "$response" | jq -r ".errors[0].code")
+    errorMsg=$(echo "$response" | jq -r ".errors[0].message")
+    if [[ $errorCode == "10000" ]]; then
+        echo "badauth - $errorMsg"
+        echo "`date +"%Y-%m-%d %T"` - $ddnsName: $errorMsg" >> $logFile
+        exit 1;
+    fi
+    echo "notfqdn - $errorMsg";
+    echo "`date +"%Y-%m-%d %T"` - $ddnsName: $errorMsg" >> $logFile
+    exit 1;
+fi
+
+recordId=$(echo "$response" | jq -r ".result[0].id // null")
+if [[ $recordId == "null" ]]; then
+    echo "nohost";
+    echo "`date +"%Y-%m-%d %T"` - $ddnsName: The hostname specified does not exist in this user account." >> $logFile
+    exit 1;
+fi
+
+dnsIp=$(echo "$response" | jq -r ".result[0].content // null")
+# No need to update ip if already same
+if [[ $dnsIp == $ip ]]; then
+	echo "nochg - IP same, skip update";
+    echo "`date +"%Y-%m-%d %T"` - $ddnsName: IP same, skip update" >> $logFile
+	exit 0;
+fi
+
+# Update the type and ip, and left every else not changed, like name, ttl and proxied.
+ipUpdateUri="https://api.cloudflare.com/client/v4/zones/$zoneId/dns_records/$recordId";
+response=$(curl -s -X PATCH "$ipUpdateUri" -H "Authorization: Bearer $apiToken" -H "Content-Type: application/json" --data '{"content":"'$ip'","type":"'$recordType'"}')
+success=$(echo "$response" | jq -r ".success")
+
+if [[ $success != "true" ]]; then
+    errorCode=$(echo "$response" | jq -r ".errors[0].code")
+    errorMsg=$(echo "$response" | jq -r ".errors[0].message")
+    if [[ $errorCode == "10000" ]]; then
+        echo "badauth - $errorMsg"
+        echo "`date +"%Y-%m-%d %T"` - $ddnsName: $errorMsg" >> $logFile
+        exit 1;
+    fi
+    echo "notfqdn - $errorMsg";
+    echo "`date +"%Y-%m-%d %T"` - $ddnsName: $errorMsg" >> $logFile
+    exit 1;
+fi
+
+echo "good";
+echo "`date +"%Y-%m-%d %T"` - $ddnsName: IP update successfully" >> $logFile
 
 exit 0;
