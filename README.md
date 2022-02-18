@@ -1,3 +1,13 @@
+The idea is to keep consistency of adding DDNS in the Synology Control Panel External Access, so user can manage all DDNS records in one place.
+Advantages:
+- Synology DSM update all DDNS items every day
+- Synology DSM has internal checking for WAN IP change, and trigger the DDNS update in minutes
+- Scripts will check the DNS record first, do not update if current IP is the same
+- IPv6 is supported
+- Scripts log event results to an easy accessible file
+
+Table of Content
+
 - [Synology Add Cloudflare DDNS 📜](#synology-add-cloudflare-ddns---)
   * [How to use `dsmCloudflareDdnsModule.sh`](#how-to-use--dsmcloudflareddnsmodulesh-)
     + [Access Synology via SSH](#access-synology-via-ssh)
