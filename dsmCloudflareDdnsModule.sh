@@ -33,15 +33,17 @@
 
 
 set -e;
-ipv4Regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
-ddnsName="Cloudflare"
-logFile="/var/services/web/logs/ddnsLog.txt"
 
 # DSM Config
 zoneId="$1"    # username
 apiToken="$2"  # password
 hostname="$3"  # hostname
 ip="$4"
+
+ipv4Regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
+logFile="/var/services/web/logs/ddnsLog.txt"
+ddnsName="Cloudflare"
+logMsgPrefix="$ddnsName $hostname -> $ip: "
 
 if [[ $ip =~ $ipv4Regex ]]; then
     recordType="A";
@@ -59,18 +61,18 @@ if [[ $success != "true" ]]; then
     errorMsg=$(echo "$response" | jq -r ".errors[0].message")
     if [[ $errorCode == "10000" ]]; then
         echo "badauth - $errorMsg"
-        echo "`date +"%Y-%m-%d %T"` - $ddnsName: $errorMsg" >> $logFile
+        echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: $errorMsg" >> $logFile
         exit 1;
     fi
     echo "notfqdn - $errorMsg";
-    echo "`date +"%Y-%m-%d %T"` - $ddnsName: $errorMsg" >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: $errorMsg" >> $logFile
     exit 1;
 fi
 
 recordId=$(echo "$response" | jq -r ".result[0].id // null")
 if [[ $recordId == "null" ]]; then
     echo "nohost";
-    echo "`date +"%Y-%m-%d %T"` - $ddnsName: The hostname specified does not exist in this user account." >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: The hostname does not exist in this user account." >> $logFile
     exit 1;
 fi
 
@@ -78,7 +80,7 @@ dnsIp=$(echo "$response" | jq -r ".result[0].content // null")
 # No need to update ip if already same
 if [[ $dnsIp == $ip ]]; then
 	echo "nochg - IP same, skip update";
-    echo "`date +"%Y-%m-%d %T"` - $ddnsName: IP same, skip update" >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: IP same, skip update" >> $logFile
 	exit 0;
 fi
 
@@ -92,15 +94,15 @@ if [[ $success != "true" ]]; then
     errorMsg=$(echo "$response" | jq -r ".errors[0].message")
     if [[ $errorCode == "10000" ]]; then
         echo "badauth - $errorMsg"
-        echo "`date +"%Y-%m-%d %T"` - $ddnsName: $errorMsg" >> $logFile
+        echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: $errorMsg" >> $logFile
         exit 1;
     fi
     echo "notfqdn - $errorMsg";
-    echo "`date +"%Y-%m-%d %T"` - $ddnsName: $errorMsg" >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: $errorMsg" >> $logFile
     exit 1;
 fi
 
 echo "good";
-echo "`date +"%Y-%m-%d %T"` - $ddnsName: IP update successfully" >> $logFile
+echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: IP update successfully" >> $logFile
 
 exit 0;
