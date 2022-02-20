@@ -42,8 +42,7 @@ ip="$4"
 
 ipv4Regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
 logFile="/var/services/web/logs/ddns.txt"
-ddnsName="Cloudflare"
-logMsgPrefix="$ddnsName $hostname -> $ip: "
+paramInfo="Cloudflare $hostname->$ip"
 
 if [[ $ip =~ $ipv4Regex ]]; then
     recordType="A";
@@ -61,18 +60,18 @@ if [[ $success != "true" ]]; then
     errorMsg=$(echo "$response" | jq -r ".errors[0].message")
     if [[ $errorCode == "10000" ]]; then
         echo "badauth - $errorMsg"
-        echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: $errorMsg" >> $logFile
+        echo "`date +"%Y-%m-%d %T"` - $paramInfo: $errorMsg" >> $logFile
         exit 1;
     fi
     echo "notfqdn - $errorMsg";
-    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: $errorMsg" >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $paramInfo: $errorMsg" >> $logFile
     exit 1;
 fi
 
 recordId=$(echo "$response" | jq -r ".result[0].id // null")
 if [[ $recordId == "null" ]]; then
     echo "nohost";
-    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: The hostname does not exist in this user account." >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $paramInfo: The hostname does not exist in this user account." >> $logFile
     exit 1;
 fi
 
@@ -80,7 +79,7 @@ dnsIp=$(echo "$response" | jq -r ".result[0].content // null")
 # No need to update ip if already same
 if [[ $dnsIp == $ip ]]; then
 	echo "nochg - IP same, skip update";
-    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: IP same, skip update" >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $paramInfo: IP same, skip update" >> $logFile
 	exit 0;
 fi
 
@@ -94,15 +93,15 @@ if [[ $success != "true" ]]; then
     errorMsg=$(echo "$response" | jq -r ".errors[0].message")
     if [[ $errorCode == "10000" ]]; then
         echo "badauth - $errorMsg"
-        echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: $errorMsg" >> $logFile
+        echo "`date +"%Y-%m-%d %T"` - $paramInfo: $errorMsg" >> $logFile
         exit 1;
     fi
     echo "notfqdn - $errorMsg";
-    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: $errorMsg" >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $paramInfo: $errorMsg" >> $logFile
     exit 1;
 fi
 
 echo "good";
-echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: IP update successfully" >> $logFile
+echo "`date +"%Y-%m-%d %T"` - $paramInfo: IP update successfully" >> $logFile
 
 exit 0;

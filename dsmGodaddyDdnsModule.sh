@@ -42,8 +42,7 @@ ip="$4"
 
 ipv4Regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
 logFile="/var/services/web/logs/ddns.txt"
-ddnsName="GoDaddy"
-logMsgPrefix="$ddnsName $hostname -> $ip: "
+paramInfo="GoDaddy $hostname->$ip"
 
 domainName=${hostname#*.}
 hostName=${hostname%%.*}
@@ -64,12 +63,12 @@ if [[ $response == {* ]]; then
     code=$(echo "$response" | jq -r ".code")
     message=$(echo "$response" | jq -r ".message")
 	echo "badauth - $message";
-    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: $message" >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $paramInfo: $message" >> $logFile
 	exit 1;
 fi
 if [[ $response == [] ]]; then
 	echo "nohost - The hostname specified does not exist in this user account.";
-    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: The hostname does not exist in this user account." >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $paramInfo: The hostname does not exist in this user account." >> $logFile
 	exit 1;
 fi
 
@@ -77,7 +76,7 @@ fi
 ttl=$(echo "$response" | jq -r ".[0].ttl // null")
 if [[ $ttl == "null" ]]; then
 	echo "nohost - The hostname specified does not exist in this user account.";
-    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: Failed to get TTL value" >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $paramInfo: Failed to get TTL value" >> $logFile
 	exit 1;
 fi
 
@@ -86,7 +85,7 @@ dnsIp=$(echo "$response" | jq -r ".[0].data // null")
 # No need to update ip if already same
 if [[ $dnsIp == $ip ]]; then
 	echo "nochg - IP same, skip update";
-    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: IP same, skip update" >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $paramInfo: IP same, skip update" >> $logFile
 	exit 0;
 fi
 
@@ -96,17 +95,17 @@ response=$(curl -s -X PUT "$ipUpdateUri" -H "Authorization: sso-key $apiKey:$sec
 
 if [ -z "$response" ]; then
 	echo "good";
-    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: IP update successfully" >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $paramInfo: IP update successfully" >> $logFile
 	exit 0;
 fi
 if [[ $response == {* ]]; then
     code=$(echo "$response" | jq -r ".code")
     message=$(echo "$response" | jq -r ".message")
     echo "notfqdn - $message";
-    echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: $message" >> $logFile
+    echo "`date +"%Y-%m-%d %T"` - $paramInfo: $message" >> $logFile
 	exit 1;
 fi
 
 echo "$response"
-echo "`date +"%Y-%m-%d %T"` - $logMsgPrefix: $response" >> $logFile
+echo "`date +"%Y-%m-%d %T"` - $paramInfo: $response" >> $logFile
 exit 1;
