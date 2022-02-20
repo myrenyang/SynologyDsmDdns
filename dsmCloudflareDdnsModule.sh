@@ -41,7 +41,7 @@ hostname="$3"  # hostname
 ip="$4"
 
 ipv4Regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
-logFile="/var/services/web/logs/ddnsLog.txt"
+logFile="/var/services/web/logs/ddns.txt"
 ddnsName="Cloudflare"
 logMsgPrefix="$ddnsName $hostname -> $ip: "
 

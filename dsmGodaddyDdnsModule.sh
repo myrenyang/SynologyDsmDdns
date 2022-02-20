@@ -41,7 +41,7 @@ hostname="$3" # format to be like 'www.example.com.us', for the root domain, lik
 ip="$4"
 
 ipv4Regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
-logFile="/var/services/web/logs/ddnsLog.txt"
+logFile="/var/services/web/logs/ddns.txt"
 ddnsName="GoDaddy"
 logMsgPrefix="$ddnsName $hostname -> $ip: "
 
