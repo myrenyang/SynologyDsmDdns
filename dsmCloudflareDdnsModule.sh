@@ -34,6 +34,9 @@
 
 set -e;
 
+# Open following to debug
+#set -x;
+
 # DSM Config
 zoneId="$1"    # username
 apiToken="$2"  # password

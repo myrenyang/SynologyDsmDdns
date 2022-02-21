@@ -34,6 +34,9 @@
 
 set -e;
 
+# Open following to debug
+#set -x;
+
 # DSM Config
 apiKey="$1"   # username
 secret="$2"   # password
@@ -91,7 +94,7 @@ fi
 
 # To upate the ip details
 ipUpdateUri="https://api.godaddy.com/v1/domains/${domainName}/records/${recordType}/${hostName}"
-response=$(curl -s -X PUT "$ipUpdateUri" -H "Authorization: sso-key $apiKey:$secret" -H "Content-Type: application/json" -d '[{"data":"'$ip'","ttl":"'$ttl'"}]')
+response=$(curl -s -X PUT "$ipUpdateUri" -H "Authorization: sso-key $apiKey:$secret" -H "Content-Type: application/json" -d '[{"data":"'$ip'","ttl":'$ttl'}]')
 
 if [ -z "$response" ]; then
 	echo "good";
